@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
+    <script src="/static/js/script.js" defer></script>
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+
+<h1> Guestbook </h1>
+<h2> Edit Entry no. {{id}} </h2>
+<form method="POST">
+  Message:<br>
+  <textarea rows="4" cols="50" name ="message" placeholder="Enter text here...">{{message}}</textarea>
+  <br>
+  Name:<br>
+  <input type="text" name="name" placeholder="Enter name..." value="{{name}}">
+  <br><br>
+  <input type="submit" value="Update">
+</form>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
+    <script src="/static/js/script.js" defer></script>
+    <link rel="shortcut icon" href="#">
+</head>
+<body>
+
+<h1> Guestbook </h1>
+<div id="entries">
+    {% for entry in entries %}
+        {% if loop.index is divisible by(2) %}
+            <div class="blue">
+        {% else %}
+            <div class="white">
+        {% endif %}
+        <p> <strong>{{ entry.message }}</strong> </p>
+        <p> Name: <strong>{{ entry.name }}</strong> </p>
+        <p> Date: {{ entry.date }} </p>
+        <a id="delete" href="/guestbook/delete/{{entry.id}}">DELETE</a>
+        <a id="delete" href="/guestbook/edit/{{entry.id}}">EDIT</a>
+        </div>
+
+    {% endfor %}
+</div><br>
+<form method="POST">
+  Message:<br>
+  <textarea rows="4" cols="50" name ="message" placeholder="Enter text here..."></textarea>
+  <br>
+  Name:<br>
+  <input type="text" name="name" placeholder="Enter name...">
+  <br><br>
+  <input type="submit" value="Submit">
+</form>
+</body>
+</html>
