@@ -1,11 +1,9 @@
 package com.codecool.handlers;
 
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -13,6 +11,12 @@ import java.util.Map;
 
 public class LoginHandler {
 
+    public void redirectToLoginPage(HttpExchange httpExchange) throws IOException {
+        Headers responseHeaders = httpExchange.getResponseHeaders();
+        responseHeaders.set("Location", "login");
+        httpExchange.sendResponseHeaders(302, 0);
+        httpExchange.close();
+    }
 
     public void send200(HttpExchange httpExchange, String response) {
         try {
@@ -20,7 +24,7 @@ public class LoginHandler {
             OutputStream os = httpExchange.getResponseBody();
             os.write(response.getBytes());
             os.close();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -46,7 +50,6 @@ public class LoginHandler {
             String[] keyValue = pair.split("=");
             String key = "";
             String value = "";
-            // We have to decode the value because it's urlencoded. see: https://en.wikipedia.org/wiki/POST_(HTTP)#Use_for_submitting_web_forms
             if (keyValue.length > 0) {
                 key = new URLDecoder().decode(keyValue[0], System.getProperty("file.encoding"));
             }
@@ -56,6 +59,10 @@ public class LoginHandler {
             map.put(key, value);
         }
         return map;
+    }
+
+    public boolean checkIfFormIsNotEmpty(Map<String, String> inputs) {
+        return !(inputs.get("username").equals("") || inputs.get("password").equals(""));
     }
 }
 

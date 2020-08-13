@@ -1,37 +1,29 @@
 package com.codecool;
 
 import com.codecool.handlers.CookieHandler;
-import com.sun.net.httpserver.Headers;
+import com.codecool.handlers.LoginHandler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class Logout implements HttpHandler {
     private final CookieHandler cookieHandler;
-    private final Map<String, User> loggedUsers;
-
+    private final TempDatabase db;
+    private final LoginHandler loginHandler;
+    
     public Logout(TempDatabase tempDatabase) {
         cookieHandler = new CookieHandler();
-        loggedUsers = tempDatabase.getLoggedUsers();
+        this.db = tempDatabase;
+        loginHandler = new LoginHandler();
     }
 
     @Override
     public void handle(HttpExchange httpExchange) throws IOException {
-        loggedUsers.remove(getExtractedCookie(httpExchange));
+        db.getLoggedUsers().remove(cookieHandler.getExtractedCookie(httpExchange));
         cookieHandler.removeCookie(httpExchange);
-
-        Headers responseHeaders = httpExchange.getResponseHeaders();
-        responseHeaders.set("Location", "login");
-        httpExchange.sendResponseHeaders(302, 0);
-        httpExchange.close();
-
-
+        loginHandler.redirectToLoginPage(httpExchange);
     }
 
-    private String getExtractedCookie(HttpExchange httpExchange) {
-        String cookie = httpExchange.getRequestHeaders().getFirst("Cookie");
-        return cookie.replace("\"", "").replace("sessionId=", "");
-    }
+
 }

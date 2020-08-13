@@ -2,10 +2,7 @@ package com.codecool.handlers;
 
 import com.codecool.helpers.CookieHelper;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.HttpCookie;
 import java.security.SecureRandom;
 import java.util.List;
@@ -15,7 +12,7 @@ public class CookieHandler {
     private static final String SESSION_COOKIE_NAME = "sessionId";
     CookieHelper cookieHelper = new CookieHelper();
 
-    public Optional<HttpCookie> getSessionIdCookie(HttpExchange httpExchange){
+    public Optional<HttpCookie> getSessionIdCookie(HttpExchange httpExchange) {
         String cookieStr = httpExchange.getRequestHeaders().getFirst("Cookie");
         List<HttpCookie> cookies = cookieHelper.parseCookies(cookieStr);
         return cookieHelper.findCookieByName(SESSION_COOKIE_NAME, cookies);
@@ -35,23 +32,18 @@ public class CookieHandler {
     }
 
     public String createCookie(HttpExchange httpExchange) {
-        Optional<HttpCookie> cookie = getSessionIdCookie(httpExchange);
         String sessionId = generateSessionID();
-        cookie = Optional.of(new HttpCookie(SESSION_COOKIE_NAME, sessionId));
+        Optional<HttpCookie> cookie = Optional.of(new HttpCookie(SESSION_COOKIE_NAME, sessionId));
         httpExchange.getResponseHeaders().add("Set-Cookie", cookie.get().toString());
         return sessionId;
     }
 
     public void removeCookie(HttpExchange httpExchange) {
-        String requestURI = httpExchange.getRequestURI().toString();
-        System.out.println(requestURI);
-
         String cookie = httpExchange.getRequestHeaders().getFirst("Cookie") + ";Max-age=0";
         httpExchange.getResponseHeaders().set("Set-Cookie", cookie);
     }
 
-    private String getExtractedCookie(HttpExchange httpExchange) {
-        String cookie = httpExchange.getRequestHeaders().getFirst("Cookie");
-        return cookie.replace("\"", "").replace("sessionId=", "");
+    public String getExtractedCookie(HttpExchange httpExchange) {
+        return getSessionIdCookie(httpExchange).get().toString().replace("\"", "").replace("sessionId=", "");
     }
 }
