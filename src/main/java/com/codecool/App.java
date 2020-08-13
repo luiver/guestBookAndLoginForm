@@ -6,16 +6,16 @@ import java.net.InetSocketAddress;
 public class App 
 {
     public static void main(String[] args) throws Exception {
-        // create a server on port 8000
         int port = 8000;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
 
-        // set routes
+        TempDatabase tempDatabase = new TempDatabase();
         server.createContext("/static", new Static());
         server.createContext("/guestbook", new GuestbookTwig());
-        server.setExecutor(null); // creates a default executor
+        server.createContext("/logout", new Logout(tempDatabase));
+        server.createContext("/login", new Login(tempDatabase));
+        server.setExecutor(null);
 
-        // start listening
         server.start();
     }
 }

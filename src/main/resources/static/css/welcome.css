@@ -1,0 +1,15 @@
+#loggedUser {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#loggedUser a {
+    text-decoration: none;
+    background-color: aqua;
+    border: aqua 1em solid;
+    border-radius: 1em;
+    align-self: center;
+    margin-top: 1em;
+    color: blueviolet;
+    font-weight: bold;
+}

@@ -24,44 +24,41 @@ public class GuestbookTwig implements HttpHandler {
         String method = httpExchange.getRequestMethod();
 
         if (httpExchange.getRequestURI().toString().split("/").length > 2) {
-            if (getNthURLArgument(httpExchange,2).equals("delete") && getNthURLArgument(httpExchange,2) != null) {
+            if (getNthURLArgument(httpExchange, 2).equals("delete") && getNthURLArgument(httpExchange, 2) != null) {
                 deleteEntry(httpExchange, response);
-
+            } else if (getNthURLArgument(httpExchange, 2).equals("edit") && getNthURLArgument(httpExchange, 2) != null) {
+                editEntry(httpExchange, method, response);
             }
-            if (getNthURLArgument(httpExchange,2).equals("edit") && getNthURLArgument(httpExchange,2) != null) {
-                try {
-                    final int id = Integer.parseInt(getNthURLArgument(httpExchange,3));
-                    if (entries.size() > 0) {
-                        Entry entry = entries.stream().filter(a -> a.getId() == id).collect(Collectors.toList()).get(0);
-                        JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/editPage.twig");
-                        JtwigModel model = JtwigModel.newModel();
-                        model.with("id", entry.getId());
-                        model.with("message", entry.getMessage());
-                        model.with("name", entry.getName());
-                        response = template.render(model);
-
-                        if (method.equals("POST")) {
-                            updateEntry(httpExchange,response);
-                        }
-                        send200(httpExchange, response);
-
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            //send200(httpExchange, response);
         } else {
             if (method.equals("POST")) {
                 addEntry(httpExchange);
             }
-
+            JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/mainPage.twig");
+            JtwigModel model = JtwigModel.newModel();
+            model.with("entries", entries);
+            response = template.render(model);
+            send200(httpExchange, response);
         }
-        JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/mainPage.twig");
-        JtwigModel model = JtwigModel.newModel();
-        model.with("entries", entries);
-        response = template.render(model);
-        send200(httpExchange, response);
+    }
+
+    private void editEntry(HttpExchange httpExchange, String method, String response) throws UnsupportedEncodingException {
+        final int id = Integer.parseInt(getNthURLArgument(httpExchange, 3));
+        if (entries.size() > 0) {
+            Entry entry = entries.stream().filter(a -> a.getId() == id).collect(Collectors.toList()).get(0);
+            JtwigTemplate template = JtwigTemplate.classpathTemplate("templates/editPage.twig");
+            JtwigModel model = JtwigModel.newModel();
+            model.with("id", entry.getId());
+            model.with("message", entry.getMessage());
+            model.with("name", entry.getName());
+            response = template.render(model);
+
+            if (method.equals("POST")) {
+                updateEntry(httpExchange, response, id);
+            } else {
+                send200(httpExchange, response);
+            }
+        }
+
     }
 
     private static Map<String, String> parseFormData(String formData) throws UnsupportedEncodingException {
@@ -94,16 +91,7 @@ public class GuestbookTwig implements HttpHandler {
         Headers responseHeaders = httpExchange.getResponseHeaders();
         responseHeaders.set("Location", "/guestbook");
         try {
-            httpExchange.sendResponseHeaders(302, 0);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void send404(HttpExchange httpExchange) {
-        try {
-            String response = "404 (Not Found)\n";
-            httpExchange.sendResponseHeaders(404, response.length());
+            httpExchange.sendResponseHeaders(302, response.length());
             OutputStream os = httpExchange.getResponseBody();
             os.write(response.getBytes());
             os.close();
@@ -141,7 +129,7 @@ public class GuestbookTwig implements HttpHandler {
         return httpExchange.getRequestURI().toString().split("/")[nth];
     }
 
-    private void updateEntry(HttpExchange httpExchange, String response) throws UnsupportedEncodingException {
+    private void updateEntry(HttpExchange httpExchange, String response, int id) throws UnsupportedEncodingException {
         String formData = getFormData(httpExchange);
         String date = getStringifiedDate();
         Map<String, String> inputs = parseFormData(formData);
@@ -150,16 +138,16 @@ public class GuestbookTwig implements HttpHandler {
             updatedEntry.setMessage(inputs.get("message"));
             updatedEntry.setName(inputs.get("name"));
             updatedEntry.setDate(date + " (Updated)");
-            //redirectToMainPage(httpExchange, response);
+            redirectToMainPage(httpExchange, response);
         }
     }
 
     private void deleteEntry(HttpExchange httpExchange, String response) {
         try {
-            int id = Integer.parseInt(getNthURLArgument(httpExchange,3));
+            int id = Integer.parseInt(getNthURLArgument(httpExchange, 3));
             if (entries.size() > 0) {
                 entries.removeIf(obj -> obj.getId() == id);
-                //redirectToMainPage(httpExchange, response);
+                redirectToMainPage(httpExchange, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
